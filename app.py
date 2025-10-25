@@ -1,34 +1,38 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
 
-st.title("Regresión Lineal Simple")
+# Título de la app
+st.title("Visualización de Regresión Lineal")
 
-# Subir archivo CSV
-file = st.file_uploader("Sube tu CSV", type="csv")
+# Crear datos de ejemplo
+st.write("Generando datos de ejemplo...")
+np.random.seed(42)
+X = 2 * np.random.rand(100, 1)
+y = 4 + 3 * X + np.random.randn(100, 1)
 
-if file:
-    df = pd.read_csv(file)
-    st.write(df)
+# Mostrar los primeros datos
+st.write(pd.DataFrame(np.hstack([X, y]), columns=["X", "y"]))
 
-    # Selección de columnas
-    x_col = st.selectbox("Variable independiente (X)", df.columns)
-    y_col = st.selectbox("Variable dependiente (Y)", df.columns)
+# Entrenar modelo
+model = LinearRegression()
+model.fit(X, y)
 
-    X = df[[x_col]]
-    y = df[y_col]
+# Predicciones
+X_new = np.array([[0], [2]])
+y_pred = model.predict(X_new)
 
-    # Entrenar modelo
-    model = LinearRegression()
-    model.fit(X, y)
+# Mostrar coeficientes
+st.write(f"Coeficiente: {model.coef_[0][0]:.2f}")
+st.write(f"Intercepto: {model.intercept_[0]:.2f}")
 
-    st.write(f"Pendiente: {model.coef_[0]}")
-    st.write(f"Intersección: {model.intercept_}")
-
-    # Predecir nuevo valor
-    new_x = st.number_input(f"Ingrese nuevo valor de {x_col}")
-    if st.button("Predecir"):
-        # Crear DataFrame con el mismo nombre de columna
-        pred = model.predict(pd.DataFrame({x_col: [new_x]}))
-        st.write(f"Predicción de {y_col}: {pred[0]}")
-
+# Visualización
+fig, ax = plt.subplots()
+ax.scatter(X, y, color="blue", label="Datos reales")
+ax.plot(X_new, y_pred, color="red", linewidth=2, label="Predicción")
+ax.set_xlabel("X")
+ax.set_ylabel("y")
+ax.legend()
+st.pyplot(fig)
